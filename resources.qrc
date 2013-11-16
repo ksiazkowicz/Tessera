@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/functions.js</file>
+        <file>qml/main.qml</file>
+        <file alias="toolbar_info">qml/information_userguide.svg</file>
+        <file>Tessera.svg</file>
+    </qresource>
+</RCC>

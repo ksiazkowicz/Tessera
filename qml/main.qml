@@ -12,6 +12,7 @@ PageStackWindow {
 
     property string accountName : ""
     property string secretkey   : ""
+    property string oneTPass    : ""
     property int    accountId   : 0
 
     Database { id: database }
@@ -84,8 +85,9 @@ PageStackWindow {
                 iconSource: "toolbar-menu"
                 onClicked: {
                     mainWindow.accountName = service
-                    mainWindow.accountId = id
-                    mainWindow.secretkey = secretkey
+                    mainWindow.accountId   = id
+                    mainWindow.secretkey   = secretkey
+                    mainWindow.oneTPass    = itemCode.text
                     accountMenu.open()
                 }
             }
@@ -111,7 +113,7 @@ PageStackWindow {
             }
             MenuItem {
                 text: qsTr("Copy to clipboard")
-                onClicked: clipboard.setText(ExtFunc.getcode(mainWindow.secretkey));
+                onClicked: clipboard.setText(mainWindow.oneTPass);
             }
         }
     }

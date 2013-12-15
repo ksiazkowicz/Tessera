@@ -65,8 +65,9 @@ PageStackWindow {
                 Column {
                     width: parent.width
                     Text {
-                        text: service
+                        text: '<font size="3" color="#ffffff"><b>' + service + '</b> - <font size="3" color="#bbbbbb">' + name + '</font>'
                         color: "white"
+                        textFormat: Text.RichText
                         font.pixelSize: 18
                     }
                     Text {
@@ -84,7 +85,7 @@ PageStackWindow {
                 onClicked: {
                     mainWindow.accountName = service
                     mainWindow.accountId = id
-                    mainWindow.secretkey = secretKey
+                    mainWindow.secretkey = secretkey
                     accountMenu.open()
                 }
             }
@@ -110,7 +111,7 @@ PageStackWindow {
             }
             MenuItem {
                 text: qsTr("Copy to clipboard")
-                onClicked: clipboard.setText(mainWindow.secretkey);
+                onClicked: clipboard.setText(ExtFunc.getcode(mainWindow.secretkey));
             }
         }
     }
@@ -195,7 +196,7 @@ PageStackWindow {
         CommonDialog {
             id: appInfo
             buttonTexts: [qsTr("Ok")]
-            titleText: "Tessera 1.0.0"
+            titleText: "Tessera 1.1"
 
             content: Text {
                 color: "white"

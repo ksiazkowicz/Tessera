@@ -83,6 +83,13 @@ DatabaseManager::DatabaseManager(QObject *parent) :
         }
     }
     databaseOpen = true;
+
+    // set up some pragma parameters to get this thing working faster
+    QSqlQuery("PRAGMA journal_mode = OFF",db);
+    QSqlQuery("PRAGMA page_size = 16384",db);
+    QSqlQuery("PRAGMA cache_size = 163840",db);
+    QSqlQuery("PRAGMA temp_store = MEMORY",db);
+    QSqlQuery("PRAGMA locking_mode = EXCLUSIVE",db);
     sqlAccounts = new SqlQueryModel( 0 );
 }
 
@@ -122,7 +129,7 @@ bool DatabaseManager::mkAccTable()
                          "service varchar(254), "
                          "name varchar(254), "
                          "secretKey varchar(254));");
-        qDebug() << query.lastError();
+
     }
     emit finished();
     return ret;
@@ -141,7 +148,7 @@ bool DatabaseManager::insertAccount(QString service,
         query.bindValue(":name", name);
         query.bindValue(":secret", secretKey);
         ret = query.exec();
-        qDebug() << query.lastError();
+
     }
     emit finished();
     return ret;
@@ -153,8 +160,6 @@ bool DatabaseManager::deleteAccount(int id)
     QSqlQuery query(db);
     if (databaseOpen)
         ret = query.exec("DELETE FROM accounts WHERE id='" + QString::number(id) + "'");
-
-    qDebug() << query.lastError();
 
     emit finished();
     return ret;

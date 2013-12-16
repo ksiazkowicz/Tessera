@@ -95,6 +95,7 @@ PageStackWindow {
                 id: line
                 anchors.top: data.bottom
                 height: 2
+                anchors.topMargin: -2
                 opacity: 0.5
                 width: parent.width
                 color: "gray"

@@ -6,7 +6,7 @@
 # Additional import path used to resolve QML modules in Creator's code model
 #QML_IMPORT_PATH =
 
-VERSION = 1.0.0
+VERSION = 1.1.0
 
 QT += declarative \
       network \

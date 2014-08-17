@@ -13,8 +13,6 @@ class SqlQueryModel : public QSqlQueryModel
 {
     Q_OBJECT
 
-    void generateRoleNames();
-
 public:
     explicit SqlQueryModel(QObject *parent = 0);
 
@@ -22,9 +20,16 @@ public:
     void setQuery(const QSqlQuery &query);
     QVariant data(const QModelIndex &index, int role) const;
 
+    void generateRoleNames();
+
+    QHash<int, QByteArray> roleNames() const;
+
 signals:
 
 public slots:
+
+private:
+    QHash<int, QByteArray> roleNamesData;
 
 };
 

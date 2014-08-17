@@ -1,8 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/functions.js</file>
-        <file>qml/main.qml</file>
+        <file>qml/Symbian.qml</file>
         <file alias="toolbar_info">qml/information_userguide.svg</file>
         <file>Tessera.svg</file>
+        <file>qml/Desktop.qml</file>
     </qresource>
 </RCC>

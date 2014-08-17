@@ -13,42 +13,48 @@
 //--------------------------------
 
 SqlQueryModel::SqlQueryModel(QObject *parent) :
-    QSqlQueryModel(parent)
-{
-
+    QSqlQueryModel(parent) {
 }
 
-void SqlQueryModel::setQuery(const QString &query, const QSqlDatabase &db)
-{
+void SqlQueryModel::setQuery(const QString &query, const QSqlDatabase &db) {
     if (db.isOpen())
         QSqlQueryModel::setQuery(query,db);
     generateRoleNames();
 }
 
-void SqlQueryModel::setQuery(const QSqlQuery & query)
-{
+void SqlQueryModel::setQuery(const QSqlQuery & query) {
     QSqlQueryModel::setQuery(query);
     generateRoleNames();
 }
 
-void SqlQueryModel::generateRoleNames()
-{
-    QHash<int, QByteArray> roleNames;
-    for( int i = 0; i < record().count(); i++) {
-        roleNames[Qt::UserRole + i + 1] = record().fieldName(i).toAscii();
-    }
-    setRoleNames(roleNames);
+QHash<int, QByteArray> SqlQueryModel::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[Qt::UserRole + 1] = "id";
+    roles[Qt::UserRole + 2] = "service";
+    roles[Qt::UserRole + 3] = "name";
+    roles[Qt::UserRole + 4] = "secretKey";
+    return roles;
 }
 
-QVariant SqlQueryModel::data(const QModelIndex &index, int role) const
-{
-    QVariant value = QSqlQueryModel::data(index, role);
-    if(role < Qt::UserRole)
-    {
-        value = QSqlQueryModel::data(index, role);
+void SqlQueryModel::generateRoleNames() {
+    QHash<int, QByteArray> roles;
+    for( int i = 0; i < record().count(); i++) {
+    #if QT_VERSION < 0x050000
+        roles[Qt::UserRole + i + 1] = record().fieldName(i).toAscii();
+    #else
+        roles[Qt::UserRole + i + 1] = record().fieldName(i).toLatin1();
+    #endif
     }
-    else
-    {
+    #if QT_VERSION < 0x050000
+    setRoleNames(roles);
+    #endif
+}
+
+QVariant SqlQueryModel::data(const QModelIndex &index, int role) const {
+    QVariant value = QSqlQueryModel::data(index, role);
+    if(role < Qt::UserRole) {
+        value = QSqlQueryModel::data(index, role);
+    } else {
         int columnIdx = role - Qt::UserRole - 1;
         QModelIndex modelIndex = this->index(index.row(), columnIdx);
         value = QSqlQueryModel::data(modelIndex, Qt::DisplayRole);

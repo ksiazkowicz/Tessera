@@ -6,4 +6,8 @@
         <file>Tessera.svg</file>
         <file>qml/Desktop.qml</file>
     </qresource>
+    <qresource prefix="/desktopGfx">
+        <file alias="arrowCollapsed">qml/img/arrowCollapsed.png</file>
+        <file alias="arrowExpanded">qml/img/arrowExpanded.png</file>
+    </qresource>
 </RCC>

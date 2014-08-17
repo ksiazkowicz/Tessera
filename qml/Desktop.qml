@@ -7,133 +7,35 @@ import "functions.js" as ExtFunc
 
 ApplicationWindow {
     visible: true
-    width: 640
+    width: 320
+    minimumWidth: 320
     height: 480
+    minimumHeight: 200
     title: qsTr("Tessera")
 
     Component.onCompleted: database.initDB();
 
-    property string accountName : ""
-    property string secretkey   : ""
-    property string oneTPass    : ""
-    property int    accountId   : 0
+    property string accountName
+    property string secretkey
+    property string oneTPass
+    property int    accountId: 0
 
     Database { id: database }
     Clipboard { id: clipboard }
-
-    Rectangle {
-      id: information
-      property alias title: titleText.text
-      property alias titleColor: titleText.color
-      property string themeColor: "#007dc9"
-
-      width: parent ? parent.width : 0
-      height: 72
-      color: "black"
-
-      Rectangle {
-          color: parent.themeColor
-          anchors.fill: parent
-          radius: 8
-      }
-
-      Rectangle {
-          color: parent.themeColor
-          anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
-          height: 8
-      }
-
-      Text {
-        id: titleText
-        x: 16
-        text: "Verification codes"
-        anchors.verticalCenter: parent.verticalCenter
-        color: "white"
-        font.pixelSize: 32
-      }
-
-      Rectangle {
-        height: 1
-        width: parent.width
-        anchors.bottom: parent.bottom
-        color: "#10000000"
-      }
-
-      Rectangle {
-        height: 1
-        width: parent.width
-        anchors.top: parent.bottom
-        anchors.topMargin: 1
-        color: "white"
-      }
-    }
 
     Component {
         id: accountDelegate
 
         Item {
             id: wrapper
-            ListView.onRemove: SequentialAnimation {
-                         PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
-                         NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
-                         PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
-                     }
-            width: parent.width;
-            height: data.height + line.height
-            anchors { left: parent.left; right: parent.right; leftMargin: 10; rightMargin: 10 }
-            Timer {
-                interval: 1000
-                running: true
-                repeat: true
-                onTriggered: {
-                    itemCode.opacity -= 1/30
-                    var newCode = ExtFunc.getcode(secretKey)
-                    if (itemCode.text!=newCode) {
-                        itemCode.text = newCode
-                        codeRenewal.restart();
-                        itemCode.opacity = 1
-                    }
-                }
-            }
 
-            Timer {
-                id: codeRenewal
-                  // Interval in milliseconds. It must be interval values.
-                  interval: 30000
-                 // Setting running to true indicates start the timer. It must be boolean  value.
-                  running: true
-                  //If repeat is set true, the timer will repeat at specified interval. Here it is 1000 milliseconds.
-                  repeat: true
-                  // This will be called when the timer is triggered. Here the
-                  // subroutine changeBoxColor() will be called at every 1 seconde (1000 milliseconds)
-                  onTriggered: {
-                      itemCode.text = ExtFunc.getcode(secretKey)
-                      itemCode.opacity = 1
-                  }
-              }
-            Row {
-                id: data
-                spacing: 10
-                height: itemName.paintedHeight + itemCode.paintedHeight
-                Column {
-                    width: parent.width
-                    Text {
-                        id: itemName
-                        text: '<font size="3"><b>' + service + '</b> - <font size="3" color="#bbbbbb">' + name + '</font>'
-                        textFormat: Text.RichText
-                        font.pixelSize: 18
-                    }
-                    Text {
-                        id: itemCode
-                        text: ExtFunc.getcode(secretKey)
-                        font.pixelSize: 40
-                    }
-                }
-            }
-            ToolButton {
-                id: deleteButton
-                anchors { verticalCenter: parent.verticalCenter; right: parent.right }
-                iconSource: "toolbar-menu"
+            property bool isOpen: false;
+            property int secondsLeft: 30
+            property int millisecondsLeft: 0
+
+            MouseArea {
+                acceptedButtons: Qt.RightButton
+                anchors.fill: parent;
                 onClicked: {
                     accountName = service
                     accountId   = id
@@ -142,31 +44,134 @@ ApplicationWindow {
                     accountMenu.popup()
                 }
             }
+
+            ListView.onRemove: SequentialAnimation {
+                         PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
+                         NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
+                         PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
+                     }
+            height: header.height + data.height + (isOpen ? 9 : 0) -1
+            anchors { left: parent.left; right: parent.right }
+            Timer {
+                interval: 10
+                running: true
+                repeat: true
+                onTriggered: {
+                    if (millisecondsLeft <= 0) {
+                        millisecondsLeft = 99;
+                        secondsLeft--;
+                    } else millisecondsLeft--;
+
+                    if (secondsLeft <=0) {
+                        itemCode.text = ExtFunc.getcode(secretKey);
+                        secondsLeft = 30;
+                        millisecondsLeft = 0;
+                    }
+                }
+            }
+            MouseArea {
+                id: header
+                Rectangle {
+                    anchors.top: parent.top;
+                    height: 1
+                    width: parent.width
+                    color: "gray"
+                }
+
+                Image {
+                    source: isOpen ? "qrc:/desktopGfx/arrowExpanded" : "qrc:/desktopGfx/arrowCollapsed"
+                    anchors { verticalCenter: parent.verticalCenter; leftMargin: 11; left: parent.left; }
+                }
+
+                Text {
+                    font.pointSize: 9
+                    text: name
+                    font.family: "Segoe UI Semilight"
+                    anchors { verticalCenter: parent.verticalCenter; leftMargin: 23; left: parent.left }
+                }
+                Text {
+                    font.pointSize: 9
+                    text: service
+                    font.family: "Segoe UI"
+                    anchors { verticalCenter: parent.verticalCenter; rightMargin: 8; right: parent.right }
+                }
+
+                height: 27
+                width: parent.width
+
+                acceptedButtons: Qt.LeftButton
+                onClicked: wrapper.isOpen = !wrapper.isOpen
+
+                Rectangle {
+                    anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
+                    width: parent.width - 8
+                    height: 1
+                    color: "#bbbbbb"
+                    visible: isOpen
+                }
+            }
+
+            Row {
+                id: data
+                width: parent.width
+                anchors { top: header.bottom; topMargin: 5; left: parent.left; leftMargin: 23; right: parent.right; rightMargin: 23; }
+                visible: isOpen
+                spacing: 16
+                Column {
+                    spacing: -5
+                    Text {
+                        text: "Current code:"
+                        font.pointSize: 9
+                        font.family: "Segoe UI Semilight"
+                        visible: isOpen
+                    }
+                    Text {
+                        id: itemCode
+                        text: ExtFunc.getcode(secretKey)
+                        font.pointSize: 26
+                        visible: isOpen
+                    }
+                }
+                Column {
+                    spacing: -5
+                    Text {
+                        text: "Changing in:"
+                        font.pointSize: 9
+                        font.family: "Segoe UI Semilight"
+                        visible: isOpen
+                    }
+                    Text {
+                        text: "00:" + (secondsLeft < 10 ? "0"+secondsLeft : secondsLeft) + ":" + (millisecondsLeft < 10 ? "0"+millisecondsLeft : millisecondsLeft)
+                        font.pointSize: 26
+                        visible: isOpen
+                    }
+                }
+            }
+
             Rectangle {
-                id: line
-                anchors.top: data.bottom
-                height: 2
-                anchors.topMargin: -2
-                opacity: 0.5
+                anchors { bottom: parent.bottom; bottomMargin: -1 }
+                height: 1
                 width: parent.width
                 color: "gray"
             }
         }
     }
 
-    ListView {
-        id: accounts
-        anchors { top: information.bottom; left: parent.left; right: parent.right; bottom: parent.bottom; topMargin: 5 }
-        model: database.accounts
-        delegate: accountDelegate
-        focus: true
-        highlightRangeMode:  ListView.StrictlyEnforceRange
+    ScrollView {
+        anchors { bottom: parent.bottom; left: parent.left; right: parent.right; top: toolBar.bottom }
+        ListView {
+            id: accounts
+            anchors { fill: parent; topMargin: -2; }
+            model: database.accounts
+            delegate: accountDelegate
+            focus: true
+        }
     }
 
     MessageDialog {
         id: appInfo
         title: "About Tessera..."
-        text: "Tessera 1.2 by Maciej Janiszewski (pisarz1958)\n\nOpen-source app for time-based OTP authentication. Inspired by CuteAuthenticator (Juhapekka Piiroinen).\n\nDuring development of this software, no mobile device was harmed.\n\nThis program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. See GPL v3 license for details."
+        text: "Tessera 1.2 by Maciej Janiszewski (pisarz1958)\n\nOpen-source app for time-based OTP authentication. Inspired by CuteAuthenticator (Juhapekka Piiroinen).\n\nDuring development of this software, no mobile device was harmed.\n\nDesktop UI designed by Tomek Cichoń (Ciastex) ^^\n\nThis program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. See GPL v3 license for details."
     }
 
 
@@ -195,8 +200,8 @@ ApplicationWindow {
         }
 
         Rectangle {
-            width: parent.width-20
-            height: column.height
+            width: parent.width
+            height: addService.height + addName.height + addKey.height + 2*label.height
             anchors.horizontalCenter: parent.horizontalCenter
             color: "transparent"
 
@@ -204,21 +209,21 @@ ApplicationWindow {
                 id: column
                 spacing: 2
                 width: parent.width
-                Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Service name:")}
+                Label { id: label; anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Service name:")}
                 TextField {
-                    id: addService;  height: 36
+                    id: addService
                     anchors { left: parent.left; right: parent.right }
                     placeholderText: qsTr("ex. Google, Evernote...")
                 }
                 Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Account name:")}
                 TextField {
-                    id: addName;  height: 36
+                    id: addName
                     anchors { left: parent.left; right: parent.right }
                     placeholderText: qsTr("Name")
                 }
                 Label { anchors.horizontalCenter: parent.horizontalCenter; text: "Secret key:"}
                 TextField {
-                    id: addKey; height: 36
+                    id: addKey
                     anchors { left: parent.left; right: parent.right }
                     placeholderText: qsTr("Secret key")
                 }
@@ -227,21 +232,33 @@ ApplicationWindow {
         }
     }
 
-    menuBar: MenuBar {
-        Menu {
-            title: qsTr("File")
-            MenuItem {
-                text: qsTr("Add key")
-                onTriggered: addAccountDialog.open()
+    Rectangle {
+        id: toolBar
+        color: "white"
+        anchors { top: parent.top; left: parent.left; margins: -1; right: parent.right }
+        height: 25
+        border.color: "#dadbdc"
+        border.width: 1
+
+        Row {
+            spacing: 10
+            anchors { top: parent.top; topMargin: 1; }
+            Rectangle {
+                width: 83
+                height: 23
+                color: "#1979ca"
+                MouseArea { anchors.fill: parent; onClicked: addAccountDialog.open(); }
+                Label { anchors.centerIn: parent; text: "Add account"; color: "white" }
             }
-            MenuItem {
+            ToolButton {
                 text: qsTr("About Tesera...")
-                onTriggered: appInfo.open()
+                anchors { verticalCenter: parent.verticalCenter }
+                onClicked: appInfo.open()
             }
-            MenuSeparator {}
-            MenuItem {
+            ToolButton {
                 text: qsTr("Exit")
-                onTriggered: Qt.quit();
+                anchors { verticalCenter: parent.verticalCenter }
+                onClicked: Qt.quit();
             }
         }
     }

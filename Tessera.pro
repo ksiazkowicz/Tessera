@@ -31,3 +31,5 @@ RESOURCES += resources.qrc
 
 HEADERS += QAvkonHelper.h \
     DatabaseManager.h
+
+win32:RC_ICONS += Tessera.ico

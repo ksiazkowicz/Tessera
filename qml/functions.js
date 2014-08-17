@@ -33,5 +33,9 @@ function getcode(secret) {
   var k=secret.replace(/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]/gi, '');
   var t=Math.floor(new Date().getTime()/30000);
   var code=totp(k,t);
+  if (String(code).length < 6) {
+      code = "0" + code
+  }
+
   return code;
 }
